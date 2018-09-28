@@ -7,6 +7,11 @@ editor_options:
   chunk_output_type: console
 ---
 
+```r
+     knitr::opts_chunk$set(fig.path = "figures/")
+```
+
+
 ## Loading and preprocessing the data
 
 
@@ -83,11 +88,11 @@ zipfile <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
 download.file(zipfile, tf <- tempfile(fileext = ".zip"))
 unzip(tf, exdir = td <- file.path(tempdir(), "myzip"))
 
-# read csv data create datafram
+# read csv data create dataframe
 rawdata <- read.csv(file.path(tempdir(), "/myzip/activity.csv"))
 activitydata <- rawdata
 
-#process data froma 
+#process data
 activitydata$date <- as.Date(as.character(activitydata$date))
 activitydata <- activitydata[complete.cases(activitydata),]
 activitydata$steps <- as.numeric(activitydata$steps)
@@ -103,7 +108,7 @@ totalSteps <- aggregate(activitydata$steps, by=list(activitydata$date), sum, na.
 ggplot(totalSteps, aes(x=totalSteps$Group.1, weights=totalSteps$x)) + geom_bar() 
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-2-1.png)<!-- -->
+![](figures/unnamed-chunk-3-1.png)<!-- -->
 
 ```r
 myFun <- function(x) {
@@ -336,14 +341,14 @@ names(intervalSteps) <- c("Interval", "AverageSteps")
 plot.ts(intervalSteps$Interval, intervalSteps$AverageSteps, type="l")
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
+![](figures/unnamed-chunk-4-1.png)<!-- -->
 
 ```r
 #find max
 maxinterval <- intervalSteps[order(intervalSteps$AverageSteps),]
 
-
 ## Imputing missing values
+# use mice library to calculate means and substitute for missing values.
 pMiss <- function(x){sum(is.na(x))/length(x)*100}
 apply(rawdata,2,pMiss)
 ```
@@ -357,7 +362,7 @@ apply(rawdata,2,pMiss)
 md.pattern(rawdata)
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-3-2.png)<!-- -->
+![](figures/unnamed-chunk-4-2.png)<!-- -->
 
 ```
 ##       date interval steps     
@@ -691,7 +696,7 @@ tapply(completedata$steps, completedata$date, myFun)
 ggplot(completedata, aes(x=completedata$date, weights=completedata$steps)) + geom_bar() 
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-3-3.png)<!-- -->
+![](figures/unnamed-chunk-4-3.png)<!-- -->
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
@@ -700,11 +705,7 @@ ggplot(completedata, aes(x=completedata$date, weights=completedata$steps)) + geo
 ```r
 completedata$weekend <- grepl("S.+", weekdays(as.Date(completedata$date)))
 
-#panel plot of weekend v weekday data
-#plot graphs in 2x2 panel
-
-par(mfrow = c(2,1), mar=c(0, 4, 1, 1) + 0.1)#it goes c(bottom, left, top, right) 
-
+par(mfrow = c(2,1), mar=c(0, 4, 1, 1) + 0.1)
 
 weekenddata <- subset(completedata, weekend == TRUE)
 weekendintervalsteps <- aggregate(weekenddata$steps, by=list(weekenddata$interval)
@@ -713,13 +714,11 @@ weekdaydata <- subset(completedata, weekend == FALSE)
 weekdayintervalsteps <- aggregate(weekdaydata$steps, by=list(weekdaydata$interval)
                                   , mean, na.action=na.omit)
 
-par(mar=c(3,4,4,1)+0.1)
-
-#create plot a
+#create plot for weekends
 plot.ts(weekendintervalsteps$Group.1, weekendintervalsteps$x, type="l",  main="Weekend", ylab="", xlab="", xaxt='n')
 
-#create plot b
+#create plot for weekdays
 plot.ts(weekdayintervalsteps$Group.1, weekdayintervalsteps$x, type="l",  main="Weekday", ylab="", xlab="interval", xlim=c(0,3000))
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
+![](figures/unnamed-chunk-5-1.png)<!-- -->
